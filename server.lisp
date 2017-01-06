@@ -50,30 +50,38 @@
                                    :socket socket
                                    :hostname (usocket:get-peer-address socket)
                                    :port (usocket:get-peer-port socket)
-                                   :server server))
-        (stream (usocket:socket-stream socket)))
-    (flet ((inner ()
-             (unwind-protect
-                  (handler-case
-                      (let ((message (lichat-protocol:from-wire stream)))
-                        (etypecase message
-                          (lichat-protocol:connect
-                           (lichat-serverlib:process connection message)))
-                        (loop while (open-stream-p stream)
-                              do (v:info :lichat.server "~a: Waiting for message..." connection)
-                                 (if (usocket:wait-for-input socket :timeout 10)
-                                     (lichat-serverlib:process connection stream)
-                                     (lichat-serverlib:send! connection 'lichat-protocol:ping))))
-                    ((or usocket:ns-try-again-condition 
-                      usocket:timeout-error 
-                      usocket:shutdown-error
-                      usocket:connection-reset-error
-                      usocket:connection-aborted-error
-                      cl:end-of-file) (err)
-                      (v:warn :lichat.server "~a: Encountered fatal error: ~a" connection err)))
-               (when (open-stream-p stream)
-                 (lichat-serverlib:teardown-connection connection)))))
-      (setf (thread connection) (bt:make-thread #'inner)))))
+                                   :server server)))
+    (setf (thread connection)
+          (bt:make-thread (lambda ()
+                            (unwind-protect
+                                 (handle-connection connection)
+                              (setf (thread connection) NIL)))))))
+
+(defmethod handle-connection ((connection connection))
+  (let* ((socket (socket connection))
+         (stream (usocket:socket-stream socket)))
+    (unwind-protect
+         (with-simple-restart (lichat-serverlib:close-connection "Close the connection.")
+           (handler-case
+               (let ((message (lichat-protocol:from-wire stream)))
+                 (etypecase message
+                   (lichat-protocol:connect
+                    (lichat-serverlib:process connection message)))
+                 (loop while (open-stream-p stream)
+                       do (v:info :lichat.server "~a: Waiting for message..." connection)
+                          (if (usocket:wait-for-input socket :timeout 10)
+                              (lichat-serverlib:process connection stream)
+                              (lichat-serverlib:send! connection 'lichat-protocol:ping))))
+             ((or usocket:ns-try-again-condition 
+               usocket:timeout-error 
+               usocket:shutdown-error
+               usocket:connection-reset-error
+               usocket:connection-aborted-error
+               cl:end-of-file) (err)
+               (v:warn :lichat.server "~a: Encountered fatal error: ~a" connection err))))
+      (when (open-stream-p stream)
+        (lichat-serverlib:teardown-connection connection)
+        (ignore-errors (usocket:socket-close socket))))))
 
 (defmethod (setf lichat-serverlib:find-channel) :before (channel name (server server))
   (v:info :lichat.server "~a: Creating channel ~a" server channel))
