@@ -8,7 +8,7 @@
 
 (defvar *default-port* 1111)
 
-(defclass server (lichat-server:server)
+(defclass server (lichat-serverlib:server)
   ((hostname :initarg :hostname :accessor hostname)
    (port :initarg :port :accessor port)
    (thread :initarg :thread :accessor thread))
@@ -18,7 +18,7 @@
    :port *default-port*
    :thread NIL))
 
-(defclass connection (lichat-server:connection)
+(defclass connection (lichat-serverlib:connection)
   ((socket :initarg :socket :accessor socket)
    (thread :initarg :thread :accessor thread))
   (:default-initargs
@@ -58,12 +58,12 @@
                       (let ((message (lichat-protocol:from-wire stream)))
                         (etypecase message
                           (lichat-protocol:connect
-                           (lichat-server:process connection message)))
+                           (lichat-serverlib:process connection message)))
                         (loop while (open-stream-p stream)
                               do (v:info :lichat.server "~a: Waiting for message..." connection)
                                  (if (usocket:wait-for-input socket :timeout 10)
-                                     (lichat-server:process connection stream)
-                                     (lichat-server:send! connection 'lichat-protocol:ping))))
+                                     (lichat-serverlib:process connection stream)
+                                     (lichat-serverlib:send! connection 'lichat-protocol:ping))))
                     ((or usocket:ns-try-again-condition 
                       usocket:timeout-error 
                       usocket:shutdown-error
@@ -72,22 +72,22 @@
                       cl:end-of-file) (err)
                       (v:warn :lichat.server "~a: Encountered fatal error: ~a" connection err)))
                (when (open-stream-p stream)
-                 (lichat-server:teardown-connection connection)))))
+                 (lichat-serverlib:teardown-connection connection)))))
       (setf (thread connection) (bt:make-thread #'inner)))))
 
-(defmethod (setf lichat-server:find-channel) :before (channel name (server server))
+(defmethod (setf lichat-serverlib:find-channel) :before (channel name (server server))
   (v:info :lichat.server "~a: Creating channel ~a" server channel))
 
-(defmethod (setf lichat-server:find-user) :before (user name (server server))
+(defmethod (setf lichat-serverlib:find-user) :before (user name (server server))
   (v:info :lichat.server "~a: Creating user ~a" server user))
 
-(defmethod (setf lichat-server:find-profile) :before (profile name (server server))
+(defmethod (setf lichat-serverlib:find-profile) :before (profile name (server server))
   (v:info :lichat.server "~a: Creating profile ~a" server profile))
 
-(defmethod lichat-server:teardown-connection :after ((connection connection))
-  (v:info :lichat.server "~a: Closing ~a" (lichat-server:server connection) connection)
+(defmethod lichat-serverlib:teardown-connection :after ((connection connection))
+  (v:info :lichat.server "~a: Closing ~a" (lichat-serverlib:server connection) connection)
   (ignore-errors (usocket:socket-close (socket connection))))
 
-(defmethod lichat-server:send ((object lichat-protocol:wire-object) (connection connection))
-  (v:info :lichat.server "~a: Sending ~s to ~a" (lichat-server:server connection) object connection)
+(defmethod lichat-serverlib:send ((object lichat-protocol:wire-object) (connection connection))
+  (v:info :lichat.server "~a: Sending ~s to ~a" (lichat-serverlib:server connection) object connection)
   (lichat-protocol:to-wire object (usocket:socket-stream (socket connection))))
