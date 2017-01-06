@@ -5,8 +5,8 @@
 |#
 
 (in-package #:cl-user)
-(defpackage #:lichat
-  (:nicknames #:org.shirakumo.lichat)
+(defpackage #:lichat-tcp-server
+  (:nicknames #:org.shirakumo.lichat.tcp-server)
   (:use #:cl)
   (:export
    #:*default-port*
