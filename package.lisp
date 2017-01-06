@@ -13,6 +13,10 @@
    #:server
    #:hostname
    #:port
+   #:thread
    #:connection
    #:socket
-   #:thread))
+   #:thread
+   #:open-connection
+   #:handle-connection
+   #:establish-connection))
