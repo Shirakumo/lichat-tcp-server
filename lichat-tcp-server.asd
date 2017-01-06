@@ -16,7 +16,7 @@
   :components ((:file "package")
                (:file "server"))
   :depends-on (:lichat-protocol
-               :lichat-server
+               :lichat-serverlib
                :usocket
                :bordeaux-threads
                :documentation-utils
