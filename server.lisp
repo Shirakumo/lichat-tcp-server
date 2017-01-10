@@ -8,6 +8,12 @@
 
 (defvar *default-port* 1111)
 
+(defun ensure-hostname (host-ish)
+  (etypecase host-ish
+    (string host-ish)
+    (array (ensure-hostname (coerce host-ish 'list)))
+    (list (format NIL "~{~a~^.~}" host-ish))))
+
 (defclass server (lichat-serverlib:server)
   ((hostname :initarg :hostname :accessor hostname)
    (port :initarg :port :accessor port)
@@ -27,39 +33,38 @@
 (defmethod open-connection ((server server))
   (when (thread server)
     (error "Connection thread still exists."))
-  (setf (thread server)
-        (bt:make-thread (lambda ()
-                          (unwind-protect
-                               (handle-connection server)
-                            (setf (thread server) NIL))))))
-
-(defmethod handle-connection ((server server))
   (let ((socket (usocket:socket-listen (hostname server) (port server))))
-    (v:info :lichat.server "~a: Listening for incoming connections on ~a:~a"
-            server (hostname server) (port server))
-    (unwind-protect
-         (loop for con = (usocket:socket-accept socket)
-               do (establish-connection con server))
-      (usocket:socket-close socket))))
+    (setf (thread server)
+          (bt:make-thread (lambda ()
+                            (unwind-protect
+                                 (handle-connection socket server)
+                              (setf (thread server) NIL)))))))
+
+(defmethod handle-connection (socket (server server))
+  (v:info :lichat.server "~a: Listening for incoming connections on ~a:~a"
+          server (hostname server) (port server))
+  (unwind-protect
+       (loop for con = (usocket:socket-accept socket)
+             do (establish-connection con server))
+    (usocket:socket-close socket)))
 
 (defmethod establish-connection (socket (server server))
   (v:info :lichat.server "~a: Establishing connection to ~a:~a"
-          server (usocket:get-peer-address socket) (usocket:get-peer-port socket))
+          server (ensure-hostname (usocket:get-peer-address socket)) (usocket:get-peer-port socket))
   (let ((connection (make-instance 'connection
                                    :user NIL
                                    :socket socket
-                                   :hostname (usocket:get-peer-address socket)
+                                   :hostname (ensure-hostname (usocket:get-peer-address socket))
                                    :port (usocket:get-peer-port socket)
                                    :server server)))
     (setf (thread connection)
           (bt:make-thread (lambda ()
                             (unwind-protect
-                                 (handle-connection connection)
+                                 (handle-connection socket connection)
                               (setf (thread connection) NIL)))))))
 
-(defmethod handle-connection ((connection connection))
-  (let* ((socket (socket connection))
-         (stream (usocket:socket-stream socket)))
+(defmethod handle-connection (socket (connection connection))
+  (let* ((stream (usocket:socket-stream socket)))
     (unwind-protect
          (with-simple-restart (lichat-serverlib:close-connection "Close the connection.")
            (handler-case
