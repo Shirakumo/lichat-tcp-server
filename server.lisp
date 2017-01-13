@@ -75,10 +75,10 @@
                    (lichat-protocol:connect
                     (lichat-serverlib:process connection message)))
                  (loop while (open-stream-p stream)
-                       do (v:info :lichat.server "~a: Waiting for message..." connection)
+                       do (v:trace :lichat.server "~a: Waiting for message..." connection)
                           (cond ((nth-value 1 (usocket:wait-for-input
                                                socket :timeout (ping-interval (lichat-serverlib:server connection))))
-                                 (v:info :lichat.server "~a: input ready!" connection)
+                                 (v:trace :lichat.server "~a: Input ready." connection)
                                  (lichat-serverlib:process connection stream))
                                 (T
                                  (lichat-serverlib:send! connection 'lichat-protocol:ping)))))
@@ -107,5 +107,5 @@
   (ignore-errors (usocket:socket-close (socket connection))))
 
 (defmethod lichat-serverlib:send ((object lichat-protocol:wire-object) (connection connection))
-  (v:info :lichat.server "~a: Sending ~s to ~a" (lichat-serverlib:server connection) object connection)
+  (v:trace :lichat.server "~a: Sending ~s to ~a" (lichat-serverlib:server connection) object connection)
   (lichat-protocol:to-wire object (usocket:socket-stream (socket connection))))
