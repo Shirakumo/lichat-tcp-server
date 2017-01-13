@@ -17,12 +17,14 @@
 (defclass server (lichat-serverlib:server)
   ((hostname :initarg :hostname :accessor hostname)
    (port :initarg :port :accessor port)
-   (thread :initarg :thread :accessor thread))
+   (thread :initarg :thread :accessor thread)
+   (ping-interval :initarg :ping-interval :accessor ping-interval))
   (:default-initargs
    :name (machine-instance)
    :hostname "localhost"
    :port *default-port*
-   :thread NIL))
+   :thread NIL
+   :ping-interval 60))
 
 (defclass connection (lichat-serverlib:connection)
   ((socket :initarg :socket :accessor socket)
@@ -74,9 +76,12 @@
                     (lichat-serverlib:process connection message)))
                  (loop while (open-stream-p stream)
                        do (v:info :lichat.server "~a: Waiting for message..." connection)
-                          (if (usocket:wait-for-input socket :timeout 10)
-                              (lichat-serverlib:process connection stream)
-                              (lichat-serverlib:send! connection 'lichat-protocol:ping))))
+                          (cond ((nth-value 1 (usocket:wait-for-input
+                                               socket :timeout (ping-interval (lichat-serverlib:server connection))))
+                                 (v:info :lichat.server "~a: input ready!" connection)
+                                 (lichat-serverlib:process connection stream))
+                                (T
+                                 (lichat-serverlib:send! connection 'lichat-protocol:ping)))))
              ((or usocket:ns-try-again-condition 
                usocket:timeout-error 
                usocket:shutdown-error
