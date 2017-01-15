@@ -8,6 +8,8 @@
 
 (defvar *default-port* 1111)
 
+;; FIXME: Secure asynchronous access to users/profiles/channels.
+
 (defun ensure-hostname (host-ish)
   (etypecase host-ish
     (string host-ish)
@@ -18,7 +20,8 @@
   ((hostname :initarg :hostname :accessor hostname)
    (port :initarg :port :accessor port)
    (thread :initarg :thread :accessor thread)
-   (ping-interval :initarg :ping-interval :accessor ping-interval))
+   (ping-interval :initarg :ping-interval :accessor ping-interval)
+   (connections :initform () :accessor connections))
   (:default-initargs
    :name (machine-instance)
    :hostname "localhost"
@@ -42,12 +45,21 @@
                                  (handle-connection socket server)
                               (setf (thread server) NIL)))))))
 
+(defmethod close-connection ((server server))
+  (unless (thread server)
+    (error "No connection thread running."))
+  (bt:interrupt-thread (thread server)
+                       (lambda () (invoke-restart 'lichat-serverlib:close-connection)))
+  (dolist (connection (connections server))
+    (close-connection connection)))
+
 (defmethod handle-connection (socket (server server))
   (v:info :lichat.server "~a: Listening for incoming connections on ~a:~a"
           server (hostname server) (port server))
   (unwind-protect
-       (loop for con = (usocket:socket-accept socket)
-             do (establish-connection con server))
+       (with-simple-restart (lichat-serverlib:close-connection "Close the connection.")
+         (loop for con = (usocket:socket-accept socket)
+               do (establish-connection con server)))
     (usocket:socket-close socket)))
 
 (defmethod establish-connection (socket (server server))
@@ -59,6 +71,7 @@
                                    :hostname (ensure-hostname (usocket:get-peer-address socket))
                                    :port (usocket:get-peer-port socket)
                                    :server server)))
+    (push connection (connections server))
     (setf (thread connection)
           (bt:make-thread (lambda ()
                             (unwind-protect
@@ -92,6 +105,12 @@
       (when (open-stream-p stream)
         (lichat-serverlib:teardown-connection connection)
         (ignore-errors (usocket:socket-close socket))))))
+
+(defmethod close-connection ((connection connection))
+  (unless (thread connection)
+    (error "No connection thread running."))
+  (bt:interrupt-thread (thread connection)
+                       (lambda () (invoke-restart 'lichat-serverlib:close-connection))))
 
 (defmethod (setf lichat-serverlib:find-channel) :before (channel name (server server))
   (v:info :lichat.server "~a: Creating channel ~a" server channel))

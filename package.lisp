@@ -18,5 +18,6 @@
    #:socket
    #:thread
    #:open-connection
+   #:close-connection
    #:handle-connection
    #:establish-connection))
