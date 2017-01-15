@@ -8,8 +8,6 @@
 
 (defvar *default-port* 1111)
 
-;; FIXME: Secure asynchronous access to users/profiles/channels.
-
 (defun ensure-hostname (host-ish)
   (etypecase host-ish
     (string host-ish)
@@ -21,6 +19,7 @@
    (port :initarg :port :accessor port)
    (thread :initarg :thread :accessor thread)
    (ping-interval :initarg :ping-interval :accessor ping-interval)
+   (lock :initform (bt:make-lock) :accessor lock)
    (connections :initform () :accessor connections))
   (:default-initargs
    :name (machine-instance)
@@ -31,9 +30,17 @@
 
 (defclass connection (lichat-serverlib:connection)
   ((socket :initarg :socket :accessor socket)
-   (thread :initarg :thread :accessor thread))
+   (thread :initarg :thread :accessor thread)
+   (lock :initform (bt:make-lock) :accessor lock))
   (:default-initargs
    :socket (error "SOCKET required.")))
+
+;; FIXME: This is a hacky way of getting what we need.
+(defclass lichat-serverlib:channel (lichat-protocol:channel lichat-serverlib:timeoutable)
+  ((lock :initform (bt:make-lock) :accessor lock)))
+
+(defclass lichat-serverlib:user (lichat-protocol:user)
+  ((lock :initform (bt:make-lock) :accessor lock)))
 
 (defmethod open-connection ((server server))
   (when (thread server)
@@ -127,4 +134,34 @@
 
 (defmethod lichat-serverlib:send ((object lichat-protocol:wire-object) (connection connection))
   (v:trace :lichat.server "~a: Sending ~s to ~a" (lichat-serverlib:server connection) object connection)
-  (lichat-protocol:to-wire object (usocket:socket-stream (socket connection))))
+  (bt:with-lock-held ((lock connection))
+    (lichat-protocol:to-wire object (usocket:socket-stream (socket connection)))))
+
+;;; Handle synchronising
+;; OPs that need a global lock
+(defmethod lichat-serverlib:process :around ((connection connection) (update lichat-protocol:connect))
+  (bt:with-lock-held ((lock (server connection)))
+    (call-next-method)))
+
+(defmethod lichat-serverlib:teardown-connection :around ((connection connection))
+  (bt:with-lock-held ((lock (server connection)))
+    (call-next-method)))
+
+(defmethod lichat-serverlib:process :around ((connection connection) (update lichat-protocol:register))
+  (bt:with-lock-held ((lock (server connection)))
+    (call-next-method)))
+
+(defmethod lichat-serverlib:process :around ((connection connection) (update lichat-protocol:create))
+  (bt:with-lock-held ((lock (server connection)))
+    (call-next-method)))
+
+;; OPs that need a local lock
+(defmethod lichat-serverlib:join :around ((channel lichat-serverlib:channel) (user lichat-serverlib:user) &optional id)
+  (bt:with-lock-held ((lock channel))
+    (bt:with-lock-held ((lock user))
+      (call-next-method))))
+
+(defmethod lichat-serverlib:leave :around ((channel lichat-serverlib:channel) (user lichat-serverlib:user) &optional id)
+  (bt:with-lock-held ((lock channel))
+    (bt:with-lock-held ((lock user))
+      (call-next-method))))
