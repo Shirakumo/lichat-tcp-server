@@ -140,19 +140,19 @@
 ;;; Handle synchronising
 ;; OPs that need a global lock
 (defmethod lichat-serverlib:process :around ((connection connection) (update lichat-protocol:connect))
-  (bt:with-lock-held ((lock (server connection)))
+  (bt:with-lock-held ((lock (lichat-serverlib:server connection)))
     (call-next-method)))
 
 (defmethod lichat-serverlib:teardown-connection :around ((connection connection))
-  (bt:with-lock-held ((lock (server connection)))
+  (bt:with-lock-held ((lock (lichat-serverlib:server connection)))
     (call-next-method)))
 
 (defmethod lichat-serverlib:process :around ((connection connection) (update lichat-protocol:register))
-  (bt:with-lock-held ((lock (server connection)))
+  (bt:with-lock-held ((lock (lichat-serverlib:server connection)))
     (call-next-method)))
 
 (defmethod lichat-serverlib:process :around ((connection connection) (update lichat-protocol:create))
-  (bt:with-lock-held ((lock (server connection)))
+  (bt:with-lock-held ((lock (lichat-serverlib:server connection)))
     (call-next-method)))
 
 ;; OPs that need a local lock
