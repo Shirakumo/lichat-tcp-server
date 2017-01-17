@@ -23,7 +23,7 @@ Notable initargs of potential interest are:
 Once a server exists, it can be started to listen to incoming connections:
 
 ```common-lisp
-(open-connection *server*)
+(lichat-tcp-server:open-connection *server*)
 ```
 
 The server logs information via [Verbose](http://shinmera.github.io/verbose/). If you set the REPL level to `:trace` you should see a bunch of status messages being printed every now and again.
@@ -31,7 +31,7 @@ The server logs information via [Verbose](http://shinmera.github.io/verbose/). I
 Once you're done with the server, you can shut it down again.
 
 ```common-lisp
-(close-connection *server*)
+(lichat-tcp-server:close-connection *server*)
 ```
 
 ## Also See
