@@ -10,13 +10,22 @@
   (:use #:cl)
   (:export
    #:*default-port*
+   #:ensure-hostname
    #:server
    #:hostname
    #:port
    #:thread
+   #:ping-interval
+   #:lock
+   #:connections
    #:connection
    #:socket
    #:thread
+   #:lock
+   #:channel
+   #:lock
+   #:user
+   #:lock
    #:open-connection
    #:close-connection
    #:handle-connection

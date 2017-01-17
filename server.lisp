@@ -14,7 +14,7 @@
     (array (ensure-hostname (coerce host-ish 'list)))
     (list (format NIL "~{~a~^.~}" host-ish))))
 
-(defclass server (lichat-serverlib:server)
+(defclass server (lichat-serverlib:flood-protected-server)
   ((hostname :initarg :hostname :accessor hostname)
    (port :initarg :port :accessor port)
    (thread :initarg :thread :accessor thread)
@@ -28,19 +28,27 @@
    :thread NIL
    :ping-interval 60))
 
-(defclass connection (lichat-serverlib:connection)
+(defclass connection (lichat-serverlib:flood-protected-connection)
   ((socket :initarg :socket :accessor socket)
    (thread :initarg :thread :accessor thread)
    (lock :initform (bt:make-lock) :accessor lock))
   (:default-initargs
    :socket (error "SOCKET required.")))
 
-;; FIXME: This is a hacky way of getting what we need.
-(defclass lichat-serverlib:channel (lichat-protocol:channel lichat-serverlib:timeoutable)
+(defclass channel (lichat-serverlib:channel)
   ((lock :initform (bt:make-lock) :accessor lock)))
 
-(defclass lichat-serverlib:user (lichat-protocol:user)
+(defclass user (lichat-serverlib:user)
   ((lock :initform (bt:make-lock) :accessor lock)))
+
+(defmethod lichat-serverlib:make-connection ((server server) &rest initargs)
+  (apply #'make-instance 'connection initargs))
+
+(defmethod lichat-serverlib:make-channel ((server server) &rest initargs)
+  (apply #'make-instance 'channel initargs))
+
+(defmethod lichat-serverlib:make-user ((server server) &rest initargs)
+  (apply #'make-instance 'user initargs))
 
 (defmethod open-connection ((server server))
   (when (thread server)
@@ -72,12 +80,12 @@
 (defmethod establish-connection (socket (server server))
   (v:info :lichat.server "~a: Establishing connection to ~a:~a"
           server (ensure-hostname (usocket:get-peer-address socket)) (usocket:get-peer-port socket))
-  (let ((connection (make-instance 'connection
-                                   :user NIL
-                                   :socket socket
-                                   :hostname (ensure-hostname (usocket:get-peer-address socket))
-                                   :port (usocket:get-peer-port socket)
-                                   :server server)))
+  (let ((connection (make-connection server
+                                     :user NIL
+                                     :socket socket
+                                     :hostname (ensure-hostname (usocket:get-peer-address socket))
+                                     :port (usocket:get-peer-port socket)
+                                     :server server)))
     (push connection (connections server))
     (setf (thread connection)
           (bt:make-thread (lambda ()
