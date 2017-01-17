@@ -175,11 +175,13 @@
 
 ;; OPs that need a local lock
 (defmethod lichat-serverlib:join :around ((channel lichat-serverlib:channel) (user lichat-serverlib:user) &optional id)
+  (declare (ignore id))
   (bt:with-lock-held ((lock channel))
     (bt:with-lock-held ((lock user))
       (call-next-method))))
 
 (defmethod lichat-serverlib:leave :around ((channel lichat-serverlib:channel) (user lichat-serverlib:user) &optional id)
+  (declare (ignore id))
   (bt:with-lock-held ((lock channel))
     (bt:with-lock-held ((lock user))
       (call-next-method))))
