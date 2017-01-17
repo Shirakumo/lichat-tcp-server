@@ -39,3 +39,4 @@ Once you're done with the server, you can shut it down again.
 * [lichat-protocol](https://shirakumo.github.io/lichat-protocol) The Lichat protocol specification.
 * [lichat-serverlib](https://shirakumo.github.io/lichat-serverlib) An agnostic implementation of the server-side protocol.
 * [lichat-tcp-client](https://shirakumo.github.io/lichat-tcp-client) A basic, threaded, TCP-based implementation of a Lichat client.
+* [LionChat](https://github.com/Shirakumo/lionchat) A Qt GUI client for a TCP server.
