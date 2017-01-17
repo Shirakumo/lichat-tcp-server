@@ -14,7 +14,8 @@
   :homepage "https://github.com/Shinmera/lichat"
   :serial T
   :components ((:file "package")
-               (:file "server"))
+               (:file "server")
+               (:file "documentation"))
   :depends-on (:lichat-protocol
                :lichat-serverlib
                :usocket
