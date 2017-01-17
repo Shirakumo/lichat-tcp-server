@@ -20,13 +20,15 @@
    (thread :initarg :thread :accessor thread)
    (ping-interval :initarg :ping-interval :accessor ping-interval)
    (lock :initform (bt:make-lock) :accessor lock)
-   (connections :initform () :accessor connections))
+   (connections :initform () :accessor connections)
+   (connection-limit :initarg :connection-limit :accessor connection-limit))
   (:default-initargs
    :name (machine-instance)
    :hostname "localhost"
    :port *default-port*
    :thread NIL
-   :ping-interval 60))
+   :ping-interval 60
+   :connection-limit 100))
 
 (defclass connection (lichat-serverlib:flood-protected-connection)
   ((socket :initarg :socket :accessor socket)
@@ -86,12 +88,16 @@
                                      :hostname (ensure-hostname (usocket:get-peer-address socket))
                                      :port (usocket:get-peer-port socket)
                                      :server server)))
-    (push connection (connections server))
-    (setf (thread connection)
-          (bt:make-thread (lambda ()
-                            (unwind-protect
-                                 (handle-connection socket connection)
-                              (setf (thread connection) NIL)))))))
+    (cond ((<= (connection-limit server) (length (connections server)))
+           (lichat-serverlib:send! connection 'too-many-connections)
+           (ignore-errors (usocket:socket-close socket)))
+          (T
+           (push connection (connections server))
+           (setf (thread connection)
+                 (bt:make-thread (lambda ()
+                                   (unwind-protect
+                                        (handle-connection socket connection)
+                                     (setf (thread connection) NIL)))))))))
 
 (defmethod handle-connection (socket (connection connection))
   (let* ((stream (usocket:socket-stream socket)))
