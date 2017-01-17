@@ -4,7 +4,7 @@ This is a simple, threaded, TCP-based server for the [Lichat protocol](https://s
 ## How To
 Create a new server instance and pass it whatever settings you would like.
 
-```common-lisp
+```
 (defvar *server* (make-instance 'lichat-tcp-server:server))
 ```
 
@@ -22,7 +22,7 @@ Notable initargs of potential interest are:
 
 Once a server exists, it can be started to listen to incoming connections:
 
-```common-lisp
+```
 (lichat-tcp-server:open-connection *server*)
 ```
 
@@ -30,7 +30,7 @@ The server logs information via [Verbose](http://shinmera.github.io/verbose/). I
 
 Once you're done with the server, you can shut it down again.
 
-```common-lisp
+```
 (lichat-tcp-server:close-connection *server*)
 ```
 
