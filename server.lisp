@@ -152,6 +152,9 @@
     (lichat-protocol:to-wire object (usocket:socket-stream (socket connection)))))
 
 ;;; Handle synchronising
+;; FIXME: I'm not entirely convinced the mutual exclusion
+;;        implemented in this model is entirely correct.
+
 ;; OPs that need a global lock
 (defmethod lichat-serverlib:process :around ((connection connection) (update lichat-protocol:connect))
   (bt:with-lock-held ((lock (lichat-serverlib:server connection)))
