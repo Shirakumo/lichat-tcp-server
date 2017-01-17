@@ -82,12 +82,13 @@
 (defmethod establish-connection (socket (server server))
   (v:info :lichat.server "~a: Establishing connection to ~a:~a"
           server (ensure-hostname (usocket:get-peer-address socket)) (usocket:get-peer-port socket))
-  (let ((connection (make-connection server
-                                     :user NIL
-                                     :socket socket
-                                     :hostname (ensure-hostname (usocket:get-peer-address socket))
-                                     :port (usocket:get-peer-port socket)
-                                     :server server)))
+  (let ((connection (lichat-serverlib:make-connection
+                     server
+                     :user NIL
+                     :socket socket
+                     :hostname (ensure-hostname (usocket:get-peer-address socket))
+                     :port (usocket:get-peer-port socket)
+                     :server server)))
     (cond ((<= (connection-limit server) (length (connections server)))
            (lichat-serverlib:send! connection 'too-many-connections)
            (ignore-errors (usocket:socket-close socket)))
