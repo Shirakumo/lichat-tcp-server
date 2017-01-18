@@ -18,6 +18,7 @@
    #:ping-interval
    #:lock
    #:connections
+   #:connection-limit
    #:connection
    #:socket
    #:thread
