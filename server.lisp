@@ -147,7 +147,8 @@
 
 (defmethod lichat-serverlib:teardown-connection :after ((connection connection))
   (v:info :lichat.server "~a: Closing ~a" (lichat-serverlib:server connection) connection)
-  (ignore-errors (usocket:socket-close (socket connection))))
+  (ignore-errors (usocket:socket-close (socket connection)))
+  (setf (connections (server connection)) (remove connection (connections (server connection)))))
 
 (defmethod lichat-serverlib:send ((object lichat-protocol:wire-object) (connection connection))
   (v:trace :lichat.server "~a: Sending ~s to ~a" (lichat-serverlib:server connection) object connection)
