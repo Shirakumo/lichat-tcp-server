@@ -107,10 +107,20 @@
     (unwind-protect
          (with-simple-restart (lichat-serverlib:close-connection "Close the connection.")
            (handler-case
-               (let ((message (lichat-protocol:from-wire stream)))
-                 (etypecase message
-                   (lichat-protocol:connect
-                    (lichat-serverlib:process connection message)))
+               (progn
+                 (handler-case
+                     (let ((message (lichat-protocol:from-wire stream)))
+                       (etypecase message
+                         (lichat-protocol:connect
+                          (lichat-serverlib:process connection message))))
+                   (lichat-protocol:wire-condition (err)
+                     (lichat-serverlib:send! connection 'malformed-update
+                                             :text (princ-to-string err))
+                     (invoke-restart 'lichat-serverlib:close-connection))
+                   (error (err)
+                     (lichat-serverlib:send! connection 'failure
+                                             :text (princ-to-string err))
+                     (invoke-restart 'lichat-serverlib:close-connection)))
                  (loop while (open-stream-p stream)
                        do (v:trace :lichat.server "~a: Waiting for message..." connection)
                           (cond ((nth-value 1 (usocket:wait-for-input
