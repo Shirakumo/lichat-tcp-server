@@ -22,6 +22,8 @@
    #:socket
    #:thread
    #:lock
+   #:hostname
+   #:port
    #:channel
    #:lock
    #:user

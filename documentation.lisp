@@ -91,6 +91,16 @@ See LOCK")
 
 See USOCKET:SOCKET
 See CONNECTION")
+  
+  (function hostname
+    "Accessor to the hostname of the connection.
+
+See CONNECTION")
+
+  (function port
+    "Accessor to the port of the connection.
+
+See CONNECTION")
 
   (type channel
     "Channel class.

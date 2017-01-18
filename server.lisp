@@ -31,7 +31,9 @@
    :connection-limit 100))
 
 (defclass connection (lichat-serverlib:flood-protected-connection)
-  ((socket :initarg :socket :accessor socket)
+  ((hostname :initarg :hostname :accessor hostname)
+   (port :initarg :port :accessor port)
+   (socket :initarg :socket :accessor socket)
    (thread :initarg :thread :accessor thread)
    (lock :initform (bt:make-lock) :accessor lock))
   (:default-initargs
