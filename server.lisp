@@ -73,7 +73,7 @@
     (close-connection connection)))
 
 (defmethod handle-connection (socket (server server))
-  (v:info :lichat.server "~a: Listening for incoming connections on ~a:~a"
+  (v:info :lichat.server.tcp "~a: Listening for incoming connections on ~a:~a"
           server (hostname server) (port server))
   (unwind-protect
        (with-simple-restart (lichat-serverlib:close-connection "Close the connection.")
@@ -82,7 +82,7 @@
     (usocket:socket-close socket)))
 
 (defmethod establish-connection (socket (server server))
-  (v:info :lichat.server "~a: Establishing connection to ~a:~a"
+  (v:info :lichat.server.tcp "~a: Establishing connection to ~a:~a"
           server (ensure-hostname (usocket:get-peer-address socket)) (usocket:get-peer-port socket))
   (let ((connection (lichat-serverlib:make-connection
                      server
@@ -122,10 +122,10 @@
                                              :text (princ-to-string err))
                      (invoke-restart 'lichat-serverlib:close-connection)))
                  (loop while (open-stream-p stream)
-                       do (v:trace :lichat.server "~a: Waiting for message..." connection)
+                       do (v:trace :lichat.server.tcp "~a: Waiting for message..." connection)
                           (cond ((nth-value 1 (usocket:wait-for-input
                                                socket :timeout (ping-interval (lichat-serverlib:server connection))))
-                                 (v:trace :lichat.server "~a: Input ready." connection)
+                                 (v:trace :lichat.server.tcp "~a: Input ready." connection)
                                  (lichat-serverlib:process connection stream))
                                 (T
                                  (lichat-serverlib:send! connection 'lichat-protocol:ping)))))
@@ -135,7 +135,7 @@
                usocket:connection-reset-error
                usocket:connection-aborted-error
                cl:end-of-file) (err)
-               (v:warn :lichat.server "~a: Encountered fatal error: ~a" connection err))))
+               (v:warn :lichat.server.tcp "~a: Encountered fatal error: ~a" connection err))))
       (when (open-stream-p stream)
         (lichat-serverlib:teardown-connection connection)
         (ignore-errors (usocket:socket-close socket))))))
@@ -147,21 +147,22 @@
                        (lambda () (invoke-restart 'lichat-serverlib:close-connection))))
 
 (defmethod (setf lichat-serverlib:find-channel) :before (channel name (server server))
-  (v:info :lichat.server "~a: Creating channel ~a" server channel))
+  (v:info :lichat.server.tcp "~a: Creating channel ~a" server channel))
 
 (defmethod (setf lichat-serverlib:find-user) :before (user name (server server))
-  (v:info :lichat.server "~a: Creating user ~a" server user))
+  (v:info :lichat.server.tcp "~a: Creating user ~a" server user))
 
 (defmethod (setf lichat-serverlib:find-profile) :before (profile name (server server))
-  (v:info :lichat.server "~a: Creating profile ~a" server profile))
+  (v:info :lichat.server.tcp "~a: Creating profile ~a" server profile))
 
 (defmethod lichat-serverlib:teardown-connection :after ((connection connection))
-  (v:info :lichat.server "~a: Closing ~a" (lichat-serverlib:server connection) connection)
-  (ignore-errors (usocket:socket-close (socket connection)))
-  (setf (connections (server connection)) (remove connection (connections (server connection)))))
+  (let ((server (lichat-serverlib:server connection)))
+    (v:info :lichat.server.tcp "~a: Closing ~a" server connection)
+    (ignore-errors (usocket:socket-close (socket connection)))
+    (setf (connections server) (remove connection (connections server)))))
 
 (defmethod lichat-serverlib:send ((object lichat-protocol:wire-object) (connection connection))
-  (v:trace :lichat.server "~a: Sending ~s to ~a" (lichat-serverlib:server connection) object connection)
+  (v:trace :lichat.server.tcp "~a: Sending ~s to ~a" (lichat-serverlib:server connection) object connection)
   (bt:with-lock-held ((lock connection))
     (lichat-protocol:to-wire object (usocket:socket-stream (socket connection)))))
 
