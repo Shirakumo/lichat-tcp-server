@@ -19,7 +19,7 @@
    (port :initarg :port :accessor port)
    (thread :initarg :thread :accessor thread)
    (ping-interval :initarg :ping-interval :accessor ping-interval)
-   (lock :initform (bt:make-lock) :accessor lock)
+   (lock :initform (bt:make-recursive-lock) :accessor lock)
    (connections :initform () :accessor connections)
    (connection-limit :initarg :connection-limit :accessor connection-limit))
   (:default-initargs
