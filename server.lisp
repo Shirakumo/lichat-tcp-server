@@ -116,10 +116,6 @@
                    (lichat-protocol:wire-condition (err)
                      (lichat-serverlib:send! connection 'malformed-update
                                              :text (princ-to-string err))
-                     (invoke-restart 'lichat-serverlib:close-connection))
-                   (error (err)
-                     (lichat-serverlib:send! connection 'failure
-                                             :text (princ-to-string err))
                      (invoke-restart 'lichat-serverlib:close-connection)))
                  (loop while (open-stream-p stream)
                        do (v:trace :lichat.server.tcp "~a: Waiting for message..." connection)
@@ -135,7 +131,12 @@
                usocket:connection-reset-error
                usocket:connection-aborted-error
                cl:end-of-file) (err)
-               (v:warn :lichat.server.tcp "~a: Encountered fatal error: ~a" connection err))))
+               (v:warn :lichat.server.tcp "~a: Encountered fatal error: ~a" connection err))
+             (error (err)
+               (v:error :lichat.server.tcp err)
+               (lichat-serverlib:send! connection 'failure
+                                       :text (princ-to-string err))
+               (invoke-restart 'lichat-serverlib:close-connection))))
       (when (open-stream-p stream)
         (lichat-serverlib:teardown-connection connection)
         (ignore-errors (usocket:socket-close socket))))))
