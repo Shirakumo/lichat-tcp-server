@@ -134,8 +134,9 @@
                (v:warn :lichat.server.tcp "~a: Encountered fatal error: ~a" connection err))
              (error (err)
                (v:error :lichat.server.tcp err)
-               (lichat-serverlib:send! connection 'failure
-                                       :text (princ-to-string err))
+               (ignore-errors
+                (lichat-serverlib:send! connection 'failure
+                                        :text (princ-to-string err)))
                (invoke-restart 'lichat-serverlib:close-connection))))
       (when (open-stream-p stream)
         (lichat-serverlib:teardown-connection connection)
@@ -150,13 +151,16 @@
 (defmethod lichat-serverlib:teardown-connection :after ((connection connection))
   (let ((server (lichat-serverlib:server connection)))
     (v:info :lichat.server.tcp "~a: Closing ~a" server connection)
-    (ignore-errors (usocket:socket-close (socket connection)))
-    (setf (connections server) (remove connection (connections server)))))
+    (setf (connections server) (remove connection (connections server)))
+    (ignore-errors (usocket:socket-close (socket connection)))))
 
 (defmethod lichat-serverlib:send ((object lichat-protocol:wire-object) (connection connection))
   (v:trace :lichat.server.tcp "~a: Sending ~s to ~a" (lichat-serverlib:server connection) object connection)
   (bt:with-lock-held ((lock connection))
-    (lichat-protocol:to-wire object (usocket:socket-stream (socket connection)))))
+    (handler-case
+        (lichat-protocol:to-wire object (usocket:socket-stream (socket connection)))
+      (error (err)
+        (v:severe :lichat.server.tcp "Error during sending to ~s: ~s" connection err)))))
 
 ;;; Handle synchronising
 ;; FIXME: I'm not entirely convinced the mutual exclusion
