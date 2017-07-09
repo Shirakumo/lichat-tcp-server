@@ -166,14 +166,19 @@
 ;; FIXME: I'm not entirely convinced the mutual exclusion
 ;;        implemented in this model is entirely correct.
 
-;; OPs that need a global lock
-(defmethod lichat-serverlib:process :around ((connection connection) (update lichat-protocol:connect))
+(defmethod lichat-serverlib:init-connection :around ((connection connection) update)
   (bt:with-lock-held ((lock (lichat-serverlib:server connection)))
-    (call-next-method)))
+    (let ((user (lichat-serverlib:find-user (lichat-protocol:from update)
+                                            (lichat-serverlib:server connection))))
+      (if user
+          (bt:with-lock-held ((lock user))
+            (call-next-method))
+          (call-next-method)))))
 
 (defmethod lichat-serverlib:teardown-connection :around ((connection connection))
   (bt:with-lock-held ((lock (lichat-serverlib:server connection)))
-    (call-next-method)))
+    (bt:with-lock-held ((lock (lichat-protocol:user connection)))
+      (call-next-method))))
 
 (defmethod lichat-serverlib:process :around ((connection connection) (update lichat-protocol:register))
   (bt:with-lock-held ((lock (lichat-serverlib:server connection)))
@@ -183,7 +188,6 @@
   (bt:with-lock-held ((lock (lichat-serverlib:server connection)))
     (call-next-method)))
 
-;; OPs that need a local lock
 (defmethod lichat-serverlib:join :around ((channel lichat-serverlib:channel) (user lichat-serverlib:user) &optional id)
   (declare (ignore id))
   (bt:with-lock-held ((lock channel))
