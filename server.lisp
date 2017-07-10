@@ -35,15 +35,15 @@
    (port :initarg :port :accessor port)
    (socket :initarg :socket :accessor socket)
    (thread :initarg :thread :accessor thread)
-   (lock :initform (bt:make-lock) :accessor lock))
+   (lock :initform (bt:make-recursive-lock) :accessor lock))
   (:default-initargs
    :socket (error "SOCKET required.")))
 
 (defclass channel (lichat-serverlib:channel)
-  ((lock :initform (bt:make-lock) :accessor lock)))
+  ((lock :initform (bt:make-recursive-lock) :accessor lock)))
 
 (defclass user (lichat-serverlib:user)
-  ((lock :initform (bt:make-lock) :accessor lock)))
+  ((lock :initform (bt:make-recursive-lock) :accessor lock)))
 
 (defmethod lichat-serverlib:make-connection ((server server) &rest initargs)
   (apply #'make-instance 'connection initargs))
@@ -156,7 +156,7 @@
 
 (defmethod lichat-serverlib:send ((object lichat-protocol:wire-object) (connection connection))
   (v:trace :lichat.server.tcp "~a: Sending ~s to ~a" (lichat-serverlib:server connection) object connection)
-  (bt:with-lock-held ((lock connection))
+  (bt:with-recursive-lock-held ((lock connection))
     (handler-case
         (lichat-protocol:to-wire object (usocket:socket-stream (socket connection)))
       (error (err)
@@ -167,35 +167,35 @@
 ;;        implemented in this model is entirely correct.
 
 (defmethod lichat-serverlib:init-connection :around ((connection connection) update)
-  (bt:with-lock-held ((lock (lichat-serverlib:server connection)))
+  (bt:with-recursive-lock-held ((lock (lichat-serverlib:server connection)))
     (let ((user (lichat-serverlib:find-user (lichat-protocol:from update)
                                             (lichat-serverlib:server connection))))
       (if user
-          (bt:with-lock-held ((lock user))
+          (bt:with-recursive-lock-held ((lock user))
             (call-next-method))
           (call-next-method)))))
 
 (defmethod lichat-serverlib:teardown-connection :around ((connection connection))
-  (bt:with-lock-held ((lock (lichat-serverlib:server connection)))
-    (bt:with-lock-held ((lock (lichat-protocol:user connection)))
+  (bt:with-recursive-lock-held ((lock (lichat-serverlib:server connection)))
+    (bt:with-recursive-lock-held ((lock (lichat-protocol:user connection)))
       (call-next-method))))
 
 (defmethod lichat-serverlib:process :around ((connection connection) (update lichat-protocol:register))
-  (bt:with-lock-held ((lock (lichat-serverlib:server connection)))
+  (bt:with-recursive-lock-held ((lock (lichat-serverlib:server connection)))
     (call-next-method)))
 
 (defmethod lichat-serverlib:process :around ((connection connection) (update lichat-protocol:create))
-  (bt:with-lock-held ((lock (lichat-serverlib:server connection)))
+  (bt:with-recursive-lock-held ((lock (lichat-serverlib:server connection)))
     (call-next-method)))
 
 (defmethod lichat-serverlib:join :around ((channel lichat-serverlib:channel) (user lichat-serverlib:user) &optional id)
   (declare (ignore id))
-  (bt:with-lock-held ((lock channel))
-    (bt:with-lock-held ((lock user))
+  (bt:with-recursive-lock-held ((lock channel))
+    (bt:with-recursive-lock-held ((lock user))
       (call-next-method))))
 
 (defmethod lichat-serverlib:leave :around ((channel lichat-serverlib:channel) (user lichat-serverlib:user) &optional id)
   (declare (ignore id))
-  (bt:with-lock-held ((lock channel))
-    (bt:with-lock-held ((lock user))
+  (bt:with-recursive-lock-held ((lock channel))
+    (bt:with-recursive-lock-held ((lock user))
       (call-next-method))))
