@@ -177,8 +177,11 @@
 
 (defmethod lichat-serverlib:teardown-connection :around ((connection connection))
   (bt:with-recursive-lock-held ((lock (lichat-serverlib:server connection)))
-    (bt:with-recursive-lock-held ((lock (lichat-protocol:user connection)))
-      (call-next-method))))
+    (let ((user (lichat-protocol:user connection)))
+      (if user
+          (bt:with-recursive-lock-held ((lock user))
+            (call-next-method))
+          (call-next-method)))))
 
 (defmethod lichat-serverlib:process :around ((connection connection) (update lichat-protocol:register))
   (bt:with-recursive-lock-held ((lock (lichat-serverlib:server connection)))
