@@ -79,6 +79,7 @@
        (with-simple-restart (lichat-serverlib:close-connection "Close the connection.")
          (loop for con = (usocket:socket-accept socket)
                do (establish-connection con server)))
+    (close (usocket:socket-stream socket))
     (usocket:socket-close socket)))
 
 (defmethod establish-connection (socket (server server))
@@ -93,7 +94,7 @@
                      :server server)))
     (cond ((<= (connection-limit server) (length (connections server)))
            (lichat-serverlib:send! connection 'too-many-connections)
-           (ignore-errors (usocket:socket-close socket)))
+           (ignore-errors (lichat-serverlib:teardown-connection connection)))
           (T
            (push connection (connections server))
            (setf (thread connection)
@@ -139,8 +140,7 @@
                                         :text (princ-to-string err)))
                (invoke-restart 'lichat-serverlib:close-connection))))
       (when (open-stream-p stream)
-        (lichat-serverlib:teardown-connection connection)
-        (ignore-errors (usocket:socket-close socket))))))
+        (lichat-serverlib:teardown-connection connection)))))
 
 (defmethod close-connection ((connection connection))
   (unless (thread connection)
@@ -152,6 +152,7 @@
   (let ((server (lichat-serverlib:server connection)))
     (v:info :lichat.server.tcp "~a: Closing ~a" server connection)
     (setf (connections server) (remove connection (connections server)))
+    (ignore-errors (close (usocket:socket-stream (socket connection))))
     (ignore-errors (usocket:socket-close (socket connection)))))
 
 (defmethod lichat-serverlib:send ((object lichat-protocol:wire-object) (connection connection))
