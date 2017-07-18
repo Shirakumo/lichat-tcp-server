@@ -198,8 +198,8 @@
     (bt:with-recursive-lock-held ((lock user))
       (call-next-method))))
 
-(defmethod lichat-serverlib:leave :around ((channel lichat-serverlib:channel) (user lichat-serverlib:user) &optional id)
-  (declare (ignore id))
+(defmethod lichat-serverlib:leave :around ((channel lichat-serverlib:channel) (user lichat-serverlib:user) &key id notify-self)
+  (declare (ignore id notify-self))
   (bt:with-recursive-lock-held ((lock channel))
     (bt:with-recursive-lock-held ((lock user))
       (call-next-method))))
