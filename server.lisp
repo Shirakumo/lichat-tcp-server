@@ -148,12 +148,13 @@
   (bt:interrupt-thread (thread connection)
                        (lambda () (invoke-restart 'lichat-serverlib:close-connection))))
 
-(defmethod lichat-serverlib:teardown-connection :after ((connection connection))
+(defmethod lichat-serverlib:teardown-connection :around ((connection connection))
   (let ((server (lichat-serverlib:server connection)))
     (v:info :lichat.server.tcp "~a: Closing ~a" server connection)
-    (setf (connections server) (remove connection (connections server)))
-    (ignore-errors (close (usocket:socket-stream (socket connection))))
-    (ignore-errors (usocket:socket-close (socket connection)))))
+    (unwind-protect (call-next-method)
+      (setf (connections server) (remove connection (connections server)))
+      (ignore-errors (close (usocket:socket-stream (socket connection))))
+      (ignore-errors (usocket:socket-close (socket connection))))))
 
 (defmethod lichat-serverlib:send ((object lichat-protocol:wire-object) (connection connection))
   (v:trace :lichat.server.tcp "~a: Sending ~s to ~a" (lichat-serverlib:server connection) object connection)
