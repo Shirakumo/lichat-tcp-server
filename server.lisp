@@ -195,12 +195,12 @@
 
 (defmethod lichat-serverlib:join :around ((channel lichat-serverlib:channel) (user lichat-serverlib:user) &optional id)
   (declare (ignore id))
-  (bt:with-recursive-lock-held ((lock channel))
-    (bt:with-recursive-lock-held ((lock user))
+  (bt:with-recursive-lock-held ((lock user))
+    (bt:with-recursive-lock-held ((lock channel))
       (call-next-method))))
 
 (defmethod lichat-serverlib:leave :around ((channel lichat-serverlib:channel) (user lichat-serverlib:user) &key id notify-self)
   (declare (ignore id notify-self))
-  (bt:with-recursive-lock-held ((lock channel))
-    (bt:with-recursive-lock-held ((lock user))
+  (bt:with-recursive-lock-held ((lock user))
+    (bt:with-recursive-lock-held ((lock channel))
       (call-next-method))))
