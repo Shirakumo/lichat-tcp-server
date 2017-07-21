@@ -95,14 +95,14 @@
                      :server server)))
     (cond ((<= (connection-limit server) (length (connections server)))
            (lichat-serverlib:send! connection 'too-many-connections)
-           (ignore-errors (lichat-serverlib:teardown-connection connection)))
+           (usocket:socket-close socket))
           (T
            (bt:with-recursive-lock-held ((lock server))
              (push connection (connections server)))
            (setf (thread connection)
                  (bt:make-thread (lambda ()
                                    (unwind-protect
-                                        (handle-connection socket connection)
+                                        (handle-connection connection)
                                      (setf (thread connection) NIL)))))))))
 
 (defmethod handle-connection :around ((connection connection))
