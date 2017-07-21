@@ -146,8 +146,8 @@
           (cond ((nth-value 1 (usocket:wait-for-input (socket connection) :timeout 1))
                  (v:trace :lichat.server.tcp "~a: Input ready." connection)
                  (lichat-serverlib:process connection stream))
-                ((< (- (get-universal-time) time)
-                    (ping-interval (lichat-serverlib:server connection)))
+                ((<= (ping-interval (lichat-serverlib:server connection))
+                     (- (get-universal-time) time))
                  (setf time (get-universal-time))
                  (lichat-serverlib:send! connection 'lichat-protocol:ping))))))
 
