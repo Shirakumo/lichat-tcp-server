@@ -28,7 +28,7 @@
    :hostname "localhost"
    :port *default-port*
    :thread NIL
-   :ping-interval 60
+   :ping-interval 10
    :connection-limit 100))
 
 (defclass connection (lichat-serverlib:flood-protected-connection)
