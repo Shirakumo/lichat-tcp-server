@@ -70,7 +70,7 @@
   (unless (thread server)
     (error "No connection thread running."))
   (bt:interrupt-thread (thread server)
-                       (lambda () (invoke-restart 'lichat-serverlib:close-connection)))
+                       (lambda () (invoke-restart 'close-connection)))
   (dolist (connection (connections server))
     (close-connection connection)))
 
@@ -78,7 +78,7 @@
   (v:info :lichat.server.tcp "~a: Listening for incoming connections on ~a:~a"
           server (hostname server) (port server))
   (unwind-protect
-       (with-simple-restart (lichat-serverlib:close-connection "Close the connection.")
+       (with-simple-restart (close-connection "Close the connection.")
          (loop for con = (usocket:socket-accept (socket server))
                do (establish-connection con server)))
     (usocket:socket-close (socket server))))
@@ -107,7 +107,7 @@
 
 (defmethod handle-connection :around ((connection connection))
   (unwind-protect
-       (with-simple-restart (lichat-serverlib:close-connection "Close the connection.")
+       (with-simple-restart (close-connection "Close the connection.")
          (handler-case
              (call-next-method)
            ((or usocket:ns-try-again-condition 
@@ -138,7 +138,7 @@
       (lichat-protocol:wire-condition (err)
         (lichat-serverlib:send! connection 'malformed-update
                                 :text (princ-to-string err))
-        (invoke-restart 'lichat-serverlib:close-connection)))
+        (invoke-restart 'close-connection)))
     (loop (v:trace :lichat.server.tcp "~a: Waiting for message..." connection)
           (cond ((nth-value 1 (usocket:wait-for-input (socket connection)
                                                       :timeout (ping-interval (lichat-serverlib:server connection))))
@@ -148,13 +148,16 @@
                  (lichat-serverlib:send! connection 'lichat-protocol:ping))))))
 
 (defmethod close-connection ((connection connection))
-  (unless (thread connection)
-    (error "No connection thread running."))
-  (bt:interrupt-thread (thread connection)
-                       (lambda () (invoke-restart 'lichat-serverlib:close-connection))))
+  (when (thread connection)
+    (if (eql (bt:current-thread) (thread connection))
+        (invoke-restart 'close-connection)
+        (bt:interrupt-thread (thread connection)
+                             (lambda () (invoke-restart 'close-connection)))))
+  connection)
 
-(defmethod lichat-serverlib:teardown-connection :before ((connection connection))
-  (v:info :lichat.server.tcp "Closing ~a" connection))
+(defmethod lichat-serverlib:teardown-connection :after ((connection connection))
+  (v:info :lichat.server.tcp "Closing ~a" connection)
+  (close-connection connection))
 
 (defmethod lichat-serverlib:send ((object lichat-protocol:wire-object) (connection connection))
   (v:trace :lichat.server.tcp "~a: Sending ~s to ~a" (lichat-serverlib:server connection) object connection)
