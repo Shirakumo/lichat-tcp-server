@@ -59,7 +59,7 @@
   (when (thread server)
     (error "Connection thread still exists."))
   (let ((socket (usocket:socket-listen (hostname server) (port server))))
-    (Setf (socket server) socket)
+    (setf (socket server) socket)
     (setf (thread server)
           (bt:make-thread (lambda ()
                             (unwind-protect
@@ -79,9 +79,9 @@
           server (hostname server) (port server))
   (unwind-protect
        (with-simple-restart (lichat-serverlib:close-connection "Close the connection.")
-         (loop for con = (usocket:socket-accept socket)
+         (loop for con = (usocket:socket-accept (socket server))
                do (establish-connection con server)))
-    (usocket:socket-close socket)))
+    (usocket:socket-close (socket server))))
 
 (defmethod establish-connection (socket (server server))
   (v:info :lichat.server.tcp "~a: Establishing connection to ~a:~a"
