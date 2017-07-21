@@ -124,7 +124,7 @@
                                       :text (princ-to-string err))))))
     (v:info :lichat.server.tcp "~a: Exiting connection handling." connection)
     (ignore-errors (usocket:socket-close (socket connection)))
-    (bt:with-recursive-lock-held ((lock (server connection)))
+    (bt:with-recursive-lock-held ((lock (lichat-serverlib:server connection)))
       (setf (connections (lichat-serverlib:server connection))
             (remove connection (connections (lichat-serverlib:server connection)))))))
 
@@ -140,8 +140,8 @@
                                 :text (princ-to-string err))
         (invoke-restart 'lichat-serverlib:close-connection)))
     (loop (v:trace :lichat.server.tcp "~a: Waiting for message..." connection)
-          (cond ((nth-value 1 (usocket:wait-for-input
-                               socket :timeout (ping-interval (lichat-serverlib:server connection))))
+          (cond ((nth-value 1 (usocket:wait-for-input (socket connection)
+                                                      :timeout (ping-interval (lichat-serverlib:server connection))))
                  (v:trace :lichat.server.tcp "~a: Input ready." connection)
                  (lichat-serverlib:process connection stream))
                 (T
@@ -154,7 +154,7 @@
                        (lambda () (invoke-restart 'lichat-serverlib:close-connection))))
 
 (defmethod lichat-serverlib:teardown-connection :before ((connection connection))
-  (v:info :lichat.server.tcp "~a: Closing ~a" server connection))
+  (v:info :lichat.server.tcp "Closing ~a" connection))
 
 (defmethod lichat-serverlib:send ((object lichat-protocol:wire-object) (connection connection))
   (v:trace :lichat.server.tcp "~a: Sending ~s to ~a" (lichat-serverlib:server connection) object connection)
