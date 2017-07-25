@@ -40,7 +40,7 @@
   (:default-initargs
    :socket (error "SOCKET required.")))
 
-(defclass channel (lichat-serverlib:channel)
+(defclass channel (lichat-serverlib:backlogged-channel)
   ((lock :initform (bt:make-recursive-lock) :accessor lock)))
 
 (defclass user (lichat-serverlib:user)
@@ -211,3 +211,7 @@
   (bt:with-recursive-lock-held ((lock user))
     (bt:with-recursive-lock-held ((lock channel))
       (call-next-method))))
+
+(defmethod lichat-serverlib:send :around ((object lichat-protocol:wire-object) (channel channel))
+  (bt:with-recursive-lock-held ((lock channel))
+    (call-next-method)))
