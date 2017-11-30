@@ -125,7 +125,7 @@
               (lichat-serverlib:send! connection 'failure
                                       :text (princ-to-string err))))))
     (v:info :lichat.server.tcp "~a: Exiting connection handling." connection)
-    (ignore-errors (usocket:socket-close (socket connection)))
+    (ignore-errors (lichat-serverlib:teardown-connection connection))
     (bt:with-recursive-lock-held ((lock (lichat-serverlib:server connection)))
       (setf (connections (lichat-serverlib:server connection))
             (remove connection (connections (lichat-serverlib:server connection)))))))
