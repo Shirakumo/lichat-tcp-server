@@ -81,8 +81,8 @@
           server (hostname server) (port server))
   (unwind-protect
        (with-simple-restart (close-connection "Close the connection.")
-         (loop for con = (usocket:socket-accept (socket server))
-               do (establish-connection con server)))
+         (loop for con = (ignore-errors (usocket:socket-accept (socket server)))
+               do (when con (establish-connection con server))))
     (usocket:socket-close (socket server))))
 
 (defmethod establish-connection (socket (server server))
