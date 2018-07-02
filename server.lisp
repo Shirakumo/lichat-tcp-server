@@ -66,7 +66,10 @@
           (bt:make-thread (lambda ()
                             (unwind-protect
                                  (handle-connection server)
-                              (setf (thread server) NIL)))))))
+                              (setf (thread server) NIL)))
+                          :name (format NIL "Lichat TCP Server ~d:~d"
+                                        (hostname server)
+                                        (port server))))))
 
 (defmethod close-connection ((server server))
   (unless (thread server)
@@ -82,7 +85,11 @@
   (unwind-protect
        (with-simple-restart (close-connection "Close the connection.")
          (loop for con = (ignore-errors (usocket:socket-accept (socket server)))
-               do (when con (establish-connection con server))))
+               do (when con (handler-case (establish-connection con server)
+                              (error (err)
+                                (v:debug :lichat.server.tcp err)
+                                (v:warn :lichat.server.tcp "~a: Error during connection establishment: ~a" err)
+                                (ignore-errors (usocket:socket-close con)))))))
     (usocket:socket-close (socket server))))
 
 (defmethod establish-connection (socket (server server))
@@ -105,7 +112,11 @@
                  (bt:make-thread (lambda ()
                                    (unwind-protect
                                         (handle-connection connection)
-                                     (setf (thread connection) NIL)))))))))
+                                     (setf (thread connection) NIL)
+                                     (ignore-errors (usocket:socket-close socket))))
+                                 :name (format NIL "Lichat TCP Client ~d:~d"
+                                               (ensure-hostname (usocket:get-peer-address socket))
+                                               (usocket:get-peer-port socket))))))))
 
 (defmethod handle-connection :around ((connection connection))
   (unwind-protect
