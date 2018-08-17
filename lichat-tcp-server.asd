@@ -10,7 +10,9 @@
   :author "Nicolas Hafner <shinmera@tymoon.eu>"
   :maintainer "Nicolas Hafner <shinmera@tymoon.eu>"
   :description "A simple TCP server implementation for lichat."
-  :homepage "https://github.com/Shirakumo/lichat-tcp-server"
+  :homepage "https://Shirakumo.github.io/lichat-tcp-server/"
+  :bug-tracker "https://github.com/Shirakumo/lichat-tcp-server/issues"
+  :source-control (:git "https://github.com/Shirakumo/lichat-tcp-server.git")
   :serial T
   :components ((:file "package")
                (:file "server")
