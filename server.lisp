@@ -123,13 +123,9 @@
        (with-simple-restart (close-connection "Close the connection.")
          (handler-case
              (call-next-method)
-           ((or usocket:ns-try-again-condition 
-             usocket:timeout-error 
-             usocket:shutdown-error
-             usocket:connection-reset-error
-             usocket:connection-aborted-error
-             cl:stream-error) (err)
-             (v:error :lichat.server.tcp err))
+           ((or usocket:socket-error cl:stream-error) (err)
+             (v:error :lichat.server.tcp err)
+             (usocket:socket-close (socket connection)))
            (error (err)
              (v:error :lichat.server.tcp err)
              (ignore-errors
