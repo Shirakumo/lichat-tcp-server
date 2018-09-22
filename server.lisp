@@ -115,8 +115,8 @@
                                      (setf (thread connection) NIL)
                                      (ignore-errors (usocket:socket-close socket))))
                                  :name (format NIL "Lichat TCP Client ~d:~d"
-                                               (ensure-hostname (usocket:get-peer-address socket))
-                                               (usocket:get-peer-port socket))))))))
+                                               (hostname connection)
+                                               (port connection))))))))
 
 (defmethod handle-connection :around ((connection connection))
   (unwind-protect
