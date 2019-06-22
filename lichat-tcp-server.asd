@@ -6,7 +6,7 @@
 
 (asdf:defsystem lichat-tcp-server
   :version "1.0.0"
-  :license "Artistic"
+  :license "zlib"
   :author "Nicolas Hafner <shinmera@tymoon.eu>"
   :maintainer "Nicolas Hafner <shinmera@tymoon.eu>"
   :description "A simple TCP server implementation for lichat."
