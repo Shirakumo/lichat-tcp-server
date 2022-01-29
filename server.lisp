@@ -189,7 +189,7 @@
   (v:info :lichat.server.tcp "Closing ~a" connection)
   (close-connection connection))
 
-(defmethod lichat-serverlib:send ((object lichat-protocol:wire-object) (connection connection))
+(defmethod lichat-serverlib:send ((object lichat-protocol:object) (connection connection))
   (v:trace :lichat.server.tcp "~a: Queuing ~s for ~a" (lichat-serverlib:server connection) object connection)
   (bt:with-recursive-lock-held ((lock connection))
     (vector-push-extend object (queue connection))))
@@ -235,6 +235,6 @@
     (bt:with-recursive-lock-held ((lock channel))
       (call-next-method))))
 
-(defmethod lichat-serverlib:send :around ((object lichat-protocol:wire-object) (channel channel))
+(defmethod lichat-serverlib:send :around ((object lichat-protocol:object) (channel channel))
   (bt:with-recursive-lock-held ((lock channel))
     (call-next-method)))
