@@ -1,0 +1,163 @@
+<!DOCTYPE html> <html lang="EN"> <head> <meta charset="utf-8"> <title>Lichat Tcp Server</title> <style>html body{margin:0 auto 0 auto;padding:20px;max-width:1024px;font-family:sans-serif;font-size:14pt;overflow-y:scroll;}html body a{text-decoration:none;}html body a[href]{color:#0055AA;}html body a[href]:hover{color:#0088EE;}html body pre{background:#FAFAFA;border:1px solid #DDDDDD;padding:0.75em;overflow-x:auto;}html body pre >code a[href]{color:#223388;}article.project h1{font-size:1.7em;}article.project h1,article.project h2,article.project h3,article.project h4,article.project h5,article.project h6{margin:0.2em 0 0.1em 0;text-indent:1em;}article.project >header{text-align:center;}article.project >header img.logo{display:block;margin:auto;max-height:170px;}article.project >header h1{display:inline-block;text-indent:0;font-size:2.5em;}article.project >header .version{vertical-align:bottom;}article.project >header .languages{margin-top:-0.5em;text-transform:capitalize;}article.project >header .description{margin:0;}article.project >header .pages{margin-top:0.5em;font-size:1.2em;text-transform:capitalize;}article.project >header .pages a{display:inline-block;padding:0 0.2em;}article.project >section{margin:1em 0 1em 0;}article.project >section img{max-width:100%;}article.project #index >ul{list-style:none;margin:0;padding:0;}article.project .row label{display:inline-block;min-width:8em;}article.project #system .row{display:flex;}article.project #system #dependencies{display:inline;margin:0;padding:0;}article.project #system #dependencies li{display:inline;padding:0 0.2em;}article.project #system #author label{vertical-align:top;}article.project #system #author ul{display:inline-block;margin:0;padding:0;list-style:none;}article.project #toc nav>*{margin-left:1em;display:block;}article.definition{margin:1em 0 0 0;}article.definition >header h1,article.definition >header h2,article.definition >header h3,article.definition >header h4,article.definition >header h5,article.definition >header h6{text-indent:0;display:inline-block;}article.definition >header ul{display:inline-block;list-style:none;margin:0;padding:0;}article.definition >header ul li{display:inline-block;padding:0 0.2em 0 0;}article.definition >header .visibility{display:none;}article.definition >header .visibility,article.definition >header .type{text-transform:lowercase;}article.definition >header .source-link{visibility:hidden;float:right;}article.definition >header .source-link:after{visibility:visible;content:"[SRC]";}article.definition .docstring{margin:0 0 0 1em;}article.definition .docstring pre{font-size:0.8em;white-space:pre-wrap;}.definition.package >header ul.nicknames{display:inline-block;list-style:none;margin:0;padding:0 0 0 1em;}.definition.package >header ul.nicknames li{display:inline;}.definition.package >header ul.nicknames:before{content:"(";}.definition.package >header ul.nicknames:after{content:")";}.definition.package ul.definitions{margin:0;list-style:none;padding:0 0 0 0.5em;}.definition.callable >header .name:before,.definition.type >header .name:before{content:"(";font-weight:normal;}.definition.callable >header .arguments:after,.definition.type >header .arguments:after{content:")";}.definition.callable >header .arguments .arguments:before,.definition.type >header .arguments .arguments:before{content:"(";}.definition.callable >header .arguments .argument,.definition.type >header .arguments .argument{padding:0;}.definition.callable >header .arguments .argument.lambda-list-keyword,.definition.type >header .arguments .argument.lambda-list-keyword{color:#991155;}.definition li>mark{background:none;border-left:0.3em solid #0088EE;padding-left:0.3em;display:block;}@media (min-width: 1300px){html body{padding-left:16em;}article.project #toc{margin:0;position:fixed;left:0;top:0;bottom:0;width:15em;overflow-y:auto;background:#F0F0F0;border-right:1px solid #A0A0A0;}}</style> </head> <body> <article class="project"> <header>   <h1>lichat tcp server</h1>   <span class="version">1.0.0</span>    <p class="description">A simple TCP server implementation for lichat.</p>   </header> <section id="toc"> <h2>Table of Contents</h2> <nav> <a href="#project">Top</a>  <a href="#documentation">Documentation</a> <nav> <a href="#about_lichat-tcp-server">About Lichat-TCP-Server</a>  <a href="#how_to">How To</a>  <a href="#also_see">Also See</a> </nav>  <a href="#system">System</a>  <a href="#system">Packages</a> <nav> <a href="#PACKAGE%20LICHAT-TCP-SERVER">LICHAT-TCP-SERVER</a> </nav>  </nav> </section>  <section id="documentation"><h2 id="about_lichat-tcp-server">About Lichat-TCP-Server</h2> <p>This is a simple, threaded, TCP-based server for the <a href="https://shirakumo.org/projects/lichat-protocol">Lichat protocol</a>.</p> <h2 id="how_to">How To</h2> <p>Create a new server instance and pass it whatever settings you would like.</p> <pre><code>(<a href="http://l1sp.org/cl/defvar" class="xref">defvar</a> *server* (<a href="http://l1sp.org/cl/make-instance" class="xref">make-instance</a> <a href="#CLASS%20LICHAT-TCP-SERVER%3ASERVER" class="xref">'lichat-tcp-server:server</a>))</code></pre> <p>Notable initargs of potential interest are:</p> <ul> <li><code>:name</code> The name the server goes by on its own network. Defaults to <code>(machine-instance)</code>.</li> <li><code>:hostname</code> The hostname to which the TCP listener should bind. The default is <code>0.0.0.0</code>.</li> <li><code>:port</code> The port the TCP listener should listen on. The default is <code>1111</code>.</li> <li><code>:ping-interval</code> The interval in which pings should be sent out to clients. The default is <code>60</code>.</li> <li><code>:salt</code> The salt with which passwords are hashed. The default is an empty string.</li> <li><code>:idle-timeout</code> The number of seconds without a response from a client after which it is considered to have timed out. The default is <code>120</code>.</li> <li><code>:flood-frame</code> The size of a flood prevention frame. The default is <code>30</code>.</li> <li><code>:flood-limit</code> The number of allowed updates within a frame before flood limitation takes effect. The default is <code>40</code>.</li> <li><code>:connection-limit</code> The number of connections in total that the server supports before dropping incoming ones. The default is <code>100</code>.</li> </ul> <p>Once a server exists, it can be started to listen to incoming connections:</p> <pre><code>(<a href="#GENERIC-FUNCTION%20LICHAT-TCP-SERVER%3AOPEN-CONNECTION" class="xref">lichat-tcp-server:open-connection</a> *server*)</code></pre> <p>The server logs information via <a href="http://shinmera.github.io/verbose/">Verbose</a>. If you set the REPL level to <code>:trace</code> you should see a bunch of status messages being printed every now and again.</p> <p>Once you're done with the server, you can shut it down again.</p> <pre><code>(<a href="#GENERIC-FUNCTION%20LICHAT-TCP-SERVER%3ACLOSE-CONNECTION" class="xref">lichat-tcp-server:close-connection</a> *server*)</code></pre> <h2 id="also_see">Also See</h2> <ul> <li><a href="https://shirakumo.github.io/lichat-protocol">lichat-protocol</a> The Lichat protocol specification.</li> <li><a href="https://shirakumo.github.io/lichat-serverlib">lichat-serverlib</a> An agnostic implementation of the server-side protocol.</li> <li><a href="https://shirakumo.github.io/lichat-tcp-client">lichat-tcp-client</a> A basic, threaded, TCP-based implementation of a Lichat client.</li> <li><a href="https://github.com/Shirakumo/lionchat">LionChat</a> A Qt GUI client for a TCP server.</li> </ul> </section>    <section id="system"> <h2>System Information</h2>  <div class="row"> <label for="version">Version:</label> <a id="version">1.0.0</a> </div>   <div class="row"> <label for="dependencies">Dependencies:</label> <ul id="dependencies"><li><a class="external" href="https://Shirakumo.github.io/lichat-protocol/">lichat-protocol</a></li><li><a class="external" href="https://Shirakumo.github.io/lichat-serverlib/">lichat-serverlib</a></li><li><a class="external">usocket</a></li><li><a class="external">bordeaux-threads</a></li><li><a class="external" href="https://Shinmera.github.io/documentation-utils/">documentation-utils</a></li><li><a class="external" href="https://Shinmera.github.io/verbose/">verbose</a></li></ul> </div>   <div class="row" id="author"> <label for="author">Author:</label> <a href="mailto:shinmera@tymoon.eu">Yukari Hafner</a> </div>   <div class="row"> <label for="license">License:</label> <a id="license" href="https://github.com/Shirakumo/lichat-tcp-server/blob/06a5b691e1f5cf390b623717837b05359bb37991/LICENSE">zlib</a> </div>   <div class="row"> <label for="homepage">Homepage:</label> <a id="homepage" href="https://Shirakumo.github.io/lichat-tcp-server/">https://Shirakumo.github.io/lichat-tcp-server/</a> </div>   <div class="row"> <label for="bug-tracker">Bug Tracker:</label> <a id="bug-tracker" href="https://github.com/Shirakumo/lichat-tcp-server/issues">https://github.com/Shirakumo/lichat-tcp-server/issues</a> </div>   <div class="row"> <label for="sources">Sources:</label> <a id="sources" href="https://github.com/Shirakumo/lichat-tcp-server.git">https://github.com/Shirakumo/lichat-tcp-server.git</a> </div>  </section>    <section id="index"> <h2>Definition Index</h2> <ul> <li> <article class="definition package" id="PACKAGE LICHAT-TCP-SERVER"> <header> <h3> <a href="#PACKAGE%20LICHAT-TCP-SERVER">LICHAT-TCP-SERVER</a> </h3> <ul class="nicknames"> <li>ORG.SHIRAKUMO.LICHAT.TCP-SERVER</li> </ul>  </header> <div class="docstring"><i>No documentation provided.</i></div> <ul class="definitions"> <li> <article class="definition special-variable" id="VARIABLE LICHAT-TCP-SERVER:*DEFAULT-PORT*"> <header> <span class="visibility">EXTERNAL</span> <span class="type">SPECIAL-VARIABLE</span> <h4 class="name"> <a href="#VARIABLE%20LICHAT-TCP-SERVER%3A%2ADEFAULT-PORT%2A">*DEFAULT-PORT*</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments"></ul>  <a class="source-link" href="https://github.com/Shirakumo/lichat-tcp-server/blob/06a5b691e1f5cf390b623717837b05359bb37991/server.lisp#L3">Source</a>  </header> <div class="docstring"><pre>The standard port on which the server will run.
+
+Should be 1111.</pre></div> </article> </li>  <li> <article class="definition class" id="CLASS LICHAT-TCP-SERVER:CHANNEL"> <header> <span class="visibility">EXTERNAL</span> <span class="type">CLASS</span> <h4 class="name"> <a href="#CLASS%20LICHAT-TCP-SERVER%3ACHANNEL">CHANNEL</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments"></ul>  <a class="source-link" href="https://github.com/Shirakumo/lichat-tcp-server/blob/06a5b691e1f5cf390b623717837b05359bb37991/server.lisp#L39">Source</a>  </header> <div class="docstring"><pre>Channel class.
+
+Access to the channel is properly handled for
+mutual exclusion from threads by its LOCK. Particularly,
+the following methods are mutually excluded via this lock:
+
+  LICHAT-SERVERLIB:JOIN
+  LICHAT-SERVERLIB:LEAVE
+
+See <a href="https://Shirakumo.github.io/lichat-serverlib/#CLASS%20LICHAT-SERVERLIB%3ACHANNEL" class="xref">LICHAT-SERVERLIB:CHANNEL</a>
+See <a href="#GENERIC-FUNCTION%20LICHAT-TCP-SERVER%3ALOCK" class="xref">LOCK</a></pre></div> </article> </li>  <li> <article class="definition class" id="CLASS LICHAT-TCP-SERVER:CONNECTION"> <header> <span class="visibility">EXTERNAL</span> <span class="type">CLASS</span> <h4 class="name"> <a href="#CLASS%20LICHAT-TCP-SERVER%3ACONNECTION">CONNECTION</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments"></ul>  <a class="source-link" href="https://github.com/Shirakumo/lichat-tcp-server/blob/06a5b691e1f5cf390b623717837b05359bb37991/server.lisp#L28">Source</a>  </header> <div class="docstring"><pre>Connection class. Each connection to a client will have an instance of this class.
+
+Access to the connection is properly handled for
+mutual exclusion from threads by its LOCK. Particularly,
+the following methods are mutually excluded via this lock:
+
+  LICHAT-SERVERLIB:SEND
+
+See <a href="https://Shirakumo.github.io/lichat-serverlib/#CLASS%20LICHAT-SERVERLIB%3AFLOOD-PROTECTED-CONNECTION" class="xref">LICHAT-SERVERLIB:FLOOD-PROTECTED-CONNECTION</a>
+See <a href="#GENERIC-FUNCTION%20LICHAT-TCP-SERVER%3ASOCKET" class="xref">SOCKET</a>
+See <a href="#GENERIC-FUNCTION%20LICHAT-TCP-SERVER%3ATHREAD" class="xref">THREAD</a>
+See <a href="#GENERIC-FUNCTION%20LICHAT-TCP-SERVER%3ALOCK" class="xref">LOCK</a></pre></div> </article> </li>  <li> <article class="definition class" id="CLASS LICHAT-TCP-SERVER:SERVER"> <header> <span class="visibility">EXTERNAL</span> <span class="type">CLASS</span> <h4 class="name"> <a href="#CLASS%20LICHAT-TCP-SERVER%3ASERVER">SERVER</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments"></ul>  <a class="source-link" href="https://github.com/Shirakumo/lichat-tcp-server/blob/06a5b691e1f5cf390b623717837b05359bb37991/server.lisp#L11">Source</a>  </header> <div class="docstring"><pre>Server class. You should instantiate this.
+
+Access to the server is properly handled for
+mutual exclusion from threads by its LOCK. Particularly,
+the following updates and processing methods for updates
+are mutually excluded via this lock:
+
+ LICHAT-SERVERLIB:TEARDOWN-CONNECTION
+ LICHAT-PROTOCOL:CONNECT
+ LICHAT-PROTOCOL:REGISTER
+ LICHAT-PROTOCOL:CREATE
+
+See <a href="https://Shirakumo.github.io/lichat-serverlib/#CLASS%20LICHAT-SERVERLIB%3AFLOOD-PROTECTED-SERVER" class="xref">LICHAT-SERVERLIB:FLOOD-PROTECTED-SERVER</a>
+See <a href="#GENERIC-FUNCTION%20LICHAT-TCP-SERVER%3AHOSTNAME" class="xref">HOSTNAME</a>
+See <a href="#GENERIC-FUNCTION%20LICHAT-TCP-SERVER%3APORT" class="xref">PORT</a>
+See <a href="#GENERIC-FUNCTION%20LICHAT-TCP-SERVER%3ATHREAD" class="xref">THREAD</a>
+See <a href="#GENERIC-FUNCTION%20LICHAT-TCP-SERVER%3APING-INTERVAL" class="xref">PING-INTERVAL</a>
+See <a href="#GENERIC-FUNCTION%20LICHAT-TCP-SERVER%3ALOCK" class="xref">LOCK</a>
+See <a href="#GENERIC-FUNCTION%20LICHAT-TCP-SERVER%3ACONNECTIONS" class="xref">CONNECTIONS</a></pre></div> </article> </li>  <li> <article class="definition class" id="CLASS LICHAT-TCP-SERVER:USER"> <header> <span class="visibility">EXTERNAL</span> <span class="type">CLASS</span> <h4 class="name"> <a href="#CLASS%20LICHAT-TCP-SERVER%3AUSER">USER</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments"></ul>  <a class="source-link" href="https://github.com/Shirakumo/lichat-tcp-server/blob/06a5b691e1f5cf390b623717837b05359bb37991/server.lisp#L42">Source</a>  </header> <div class="docstring"><pre>User class.
+
+Access to the user is properly handled for
+mutual exclusion from threads by its LOCK. Particularly,
+the following methods are mutually excluded via this lock:
+
+  LICHAT-SERVERLIB:JOIN
+  LICHAT-SERVERLIB:LEAVE
+
+See <a href="https://Shirakumo.github.io/lichat-serverlib/#CLASS%20LICHAT-SERVERLIB%3AUSER" class="xref">LICHAT-SERVERLIB:USER</a>
+See <a href="#GENERIC-FUNCTION%20LICHAT-TCP-SERVER%3ALOCK" class="xref">LOCK</a></pre></div> </article> </li>  <li> <article class="definition function callable" id="FUNCTION LICHAT-TCP-SERVER:ENSURE-HOSTNAME"> <header> <span class="visibility">EXTERNAL</span> <span class="type">FUNCTION</span> <h4 class="name"> <a href="#FUNCTION%20LICHAT-TCP-SERVER%3AENSURE-HOSTNAME">ENSURE-HOSTNAME</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">HOST-ISH</li>    <li class="argument lambda-list-keyword">&amp;REST</li>  </ul>  <a class="source-link" href="https://github.com/Shirakumo/lichat-tcp-server/blob/06a5b691e1f5cf390b623717837b05359bb37991/server.lisp#L5">Source</a>  </header> <div class="docstring"><pre>Ensures that the host-ish is turned into a hostname string.</pre></div> </article> </li>  <li> <article class="definition generic-function callable" id="GENERIC-FUNCTION LICHAT-TCP-SERVER:CLOSE-CONNECTION"> <header> <span class="visibility">EXTERNAL</span> <span class="type">GENERIC-FUNCTION</span> <h4 class="name"> <a href="#GENERIC-FUNCTION%20LICHAT-TCP-SERVER%3ACLOSE-CONNECTION">CLOSE-CONNECTION</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">SERVER</li>    <li class="argument lambda-list-keyword">&amp;REST</li>  </ul>  </header> <div class="docstring"><pre>Stop accepting incoming connections and close all existing ones.
+
+Can be used with either a SERVER or a CONNECTION.
+
+See <a href="#GENERIC-FUNCTION%20LICHAT-TCP-SERVER%3ACONNECTIONS" class="xref">CONNECTIONS</a>
+See <a href="#GENERIC-FUNCTION%20LICHAT-TCP-SERVER%3ATHREAD" class="xref">THREAD</a>
+See <a href="#CLASS%20LICHAT-TCP-SERVER%3ASERVER" class="xref">SERVER</a>
+See <a href="#CLASS%20LICHAT-TCP-SERVER%3ACONNECTION" class="xref">CONNECTION</a></pre></div> </article> </li>  <li> <article class="definition generic-function callable" id="GENERIC-FUNCTION LICHAT-TCP-SERVER:CONNECTION-LIMIT"> <header> <span class="visibility">EXTERNAL</span> <span class="type">GENERIC-FUNCTION</span> <h4 class="name"> <a href="#GENERIC-FUNCTION%20LICHAT-TCP-SERVER%3ACONNECTION-LIMIT">CONNECTION-LIMIT</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">OBJECT</li>    <li class="argument lambda-list-keyword">&amp;REST</li>  </ul>  </header> <div class="docstring"><i>No documentation provided.</i></div> </article> </li>  <li> <article class="definition generic-function callable" id="GENERIC-FUNCTION LICHAT-TCP-SERVER:(SETF CONNECTION-LIMIT)"> <header> <span class="visibility">EXTERNAL</span> <span class="type">GENERIC-FUNCTION</span> <h4 class="name"> <a href="#GENERIC-FUNCTION%20LICHAT-TCP-SERVER%3A%28SETF%20CONNECTION-LIMIT%29">(SETF CONNECTION-LIMIT)</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">NEW-VALUE</li>    <li class="argument">OBJECT</li>    <li class="argument lambda-list-keyword">&amp;REST</li>  </ul>  </header> <div class="docstring"><i>No documentation provided.</i></div> </article> </li>  <li> <article class="definition generic-function callable" id="GENERIC-FUNCTION LICHAT-TCP-SERVER:CONNECTIONS"> <header> <span class="visibility">EXTERNAL</span> <span class="type">GENERIC-FUNCTION</span> <h4 class="name"> <a href="#GENERIC-FUNCTION%20LICHAT-TCP-SERVER%3ACONNECTIONS">CONNECTIONS</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">OBJECT</li>    <li class="argument lambda-list-keyword">&amp;REST</li>  </ul>  </header> <div class="docstring"><pre>Accessor to the list of connections on the server.
+
+See <a href="#CLASS%20LICHAT-TCP-SERVER%3ASERVER" class="xref">SERVER</a>
+See <a href="#CLASS%20LICHAT-TCP-SERVER%3ACONNECTION" class="xref">CONNECTION</a></pre></div> </article> </li>  <li> <article class="definition generic-function callable" id="GENERIC-FUNCTION LICHAT-TCP-SERVER:(SETF CONNECTIONS)"> <header> <span class="visibility">EXTERNAL</span> <span class="type">GENERIC-FUNCTION</span> <h4 class="name"> <a href="#GENERIC-FUNCTION%20LICHAT-TCP-SERVER%3A%28SETF%20CONNECTIONS%29">(SETF CONNECTIONS)</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">NEW-VALUE</li>    <li class="argument">OBJECT</li>    <li class="argument lambda-list-keyword">&amp;REST</li>  </ul>  </header> <div class="docstring"><i>No documentation provided.</i></div> </article> </li>  <li> <article class="definition generic-function callable" id="GENERIC-FUNCTION LICHAT-TCP-SERVER:ESTABLISH-CONNECTION"> <header> <span class="visibility">EXTERNAL</span> <span class="type">GENERIC-FUNCTION</span> <h4 class="name"> <a href="#GENERIC-FUNCTION%20LICHAT-TCP-SERVER%3AESTABLISH-CONNECTION">ESTABLISH-CONNECTION</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">SOCKET</li>    <li class="argument">SERVER</li>    <li class="argument lambda-list-keyword">&amp;REST</li>  </ul>  </header> <div class="docstring"><pre>Responsible for establishing a new connection to a client.
+
+This will construct and push a new CONNECTION object
+onto the server using the given socket. It will also
+launch the CONNECTION's background handling thread.</pre></div> </article> </li>  <li> <article class="definition generic-function callable" id="GENERIC-FUNCTION LICHAT-TCP-SERVER:HANDLE-CONNECTION"> <header> <span class="visibility">EXTERNAL</span> <span class="type">GENERIC-FUNCTION</span> <h4 class="name"> <a href="#GENERIC-FUNCTION%20LICHAT-TCP-SERVER%3AHANDLE-CONNECTION">HANDLE-CONNECTION</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">SERVER</li>    <li class="argument lambda-list-keyword">&amp;REST</li>  </ul>  </header> <div class="docstring"><pre>Handle the socket with the given object.
+
+The object should be either a SERVER or a CONNECTION.
+
+In the case of the server, it will listen for new clients
+and if one is found, call ESTABLISH-CONNECTION.
+
+In the case of the client, it will first manage connection
+establishment as per the Lichat protocol, then repeatedly
+wait for a new update with a timeout. If the timeout is 
+reached, a PING update is sent to the connection. If an
+update is received, it is PROCESSED. If the socket ever
+experiences a connection problem (timeout, shutdown, reset,
+etc) then the connection is immediately closed.
+Provides a CLOSE-CONNECTION restart as mandated by the
+serverlib.
+
+See <a href="#CLASS%20LICHAT-TCP-SERVER%3ASERVER" class="xref">SERVER</a>
+See <a href="#CLASS%20LICHAT-TCP-SERVER%3ACONNECTION" class="xref">CONNECTION</a>
+See <a href="#GENERIC-FUNCTION%20LICHAT-TCP-SERVER%3AESTABLISH-CONNECTION" class="xref">ESTABLISH-CONNECTION</a>
+See <a href="https://Shirakumo.github.io/lichat-serverlib/#GENERIC-FUNCTION%20LICHAT-SERVERLIB%3APROCESS" class="xref">LICHAT-SERVERLIB:PROCESS</a></pre></div> </article> </li>  <li> <article class="definition generic-function callable" id="GENERIC-FUNCTION LICHAT-TCP-SERVER:HOSTNAME"> <header> <span class="visibility">EXTERNAL</span> <span class="type">GENERIC-FUNCTION</span> <h4 class="name"> <a href="#GENERIC-FUNCTION%20LICHAT-TCP-SERVER%3AHOSTNAME">HOSTNAME</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">OBJECT</li>    <li class="argument lambda-list-keyword">&amp;REST</li>  </ul>  </header> <div class="docstring"><pre>Accessor to the hostname of the connection.
+
+See <a href="#CLASS%20LICHAT-TCP-SERVER%3ACONNECTION" class="xref">CONNECTION</a></pre></div> </article> </li>  <li> <article class="definition generic-function callable" id="GENERIC-FUNCTION LICHAT-TCP-SERVER:(SETF HOSTNAME)"> <header> <span class="visibility">EXTERNAL</span> <span class="type">GENERIC-FUNCTION</span> <h4 class="name"> <a href="#GENERIC-FUNCTION%20LICHAT-TCP-SERVER%3A%28SETF%20HOSTNAME%29">(SETF HOSTNAME)</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">NEW-VALUE</li>    <li class="argument">OBJECT</li>    <li class="argument lambda-list-keyword">&amp;REST</li>  </ul>  </header> <div class="docstring"><i>No documentation provided.</i></div> </article> </li>  <li> <article class="definition generic-function callable" id="GENERIC-FUNCTION LICHAT-TCP-SERVER:LOCK"> <header> <span class="visibility">EXTERNAL</span> <span class="type">GENERIC-FUNCTION</span> <h4 class="name"> <a href="#GENERIC-FUNCTION%20LICHAT-TCP-SERVER%3ALOCK">LOCK</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">OBJECT</li>    <li class="argument lambda-list-keyword">&amp;REST</li>  </ul>  </header> <div class="docstring"><pre>Accessor to the lock of the object that is used to mutually exclude access.
+
+See <a href="#CLASS%20LICHAT-TCP-SERVER%3ASERVER" class="xref">SERVER </a>
+See <a href="#CLASS%20LICHAT-TCP-SERVER%3ACONNECTION" class="xref">CONNECTION</a>
+See <a href="#CLASS%20LICHAT-TCP-SERVER%3AUSER" class="xref">USER</a>
+See <a href="#CLASS%20LICHAT-TCP-SERVER%3ACHANNEL" class="xref">CHANNEL</a></pre></div> </article> </li>  <li> <article class="definition generic-function callable" id="GENERIC-FUNCTION LICHAT-TCP-SERVER:(SETF LOCK)"> <header> <span class="visibility">EXTERNAL</span> <span class="type">GENERIC-FUNCTION</span> <h4 class="name"> <a href="#GENERIC-FUNCTION%20LICHAT-TCP-SERVER%3A%28SETF%20LOCK%29">(SETF LOCK)</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">NEW-VALUE</li>    <li class="argument">OBJECT</li>    <li class="argument lambda-list-keyword">&amp;REST</li>  </ul>  </header> <div class="docstring"><i>No documentation provided.</i></div> </article> </li>  <li> <article class="definition generic-function callable" id="GENERIC-FUNCTION LICHAT-TCP-SERVER:OPEN-CONNECTION"> <header> <span class="visibility">EXTERNAL</span> <span class="type">GENERIC-FUNCTION</span> <h4 class="name"> <a href="#GENERIC-FUNCTION%20LICHAT-TCP-SERVER%3AOPEN-CONNECTION">OPEN-CONNECTION</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">SERVER</li>    <li class="argument lambda-list-keyword">&amp;REST</li>  </ul>  </header> <div class="docstring"><pre>Start accepting incoming connections on the server.
+
+This will launch a background thread which will
+call HANDLE-CONNECTION on the socket and server.
+
+See <a href="#GENERIC-FUNCTION%20LICHAT-TCP-SERVER%3AHANDLE-CONNECTION" class="xref">HANDLE-CONNECTION</a>
+See <a href="#GENERIC-FUNCTION%20LICHAT-TCP-SERVER%3ATHREAD" class="xref">THREAD</a>
+See <a href="#CLASS%20LICHAT-TCP-SERVER%3ASERVER" class="xref">SERVER</a></pre></div> </article> </li>  <li> <article class="definition generic-function callable" id="GENERIC-FUNCTION LICHAT-TCP-SERVER:PING-INTERVAL"> <header> <span class="visibility">EXTERNAL</span> <span class="type">GENERIC-FUNCTION</span> <h4 class="name"> <a href="#GENERIC-FUNCTION%20LICHAT-TCP-SERVER%3APING-INTERVAL">PING-INTERVAL</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">OBJECT</li>    <li class="argument lambda-list-keyword">&amp;REST</li>  </ul>  </header> <div class="docstring"><pre>Accessor to the amount of seconds to wait for an update before sending a PING.
+
+See <a href="#CLASS%20LICHAT-TCP-SERVER%3ASERVER" class="xref">SERVER</a></pre></div> </article> </li>  <li> <article class="definition generic-function callable" id="GENERIC-FUNCTION LICHAT-TCP-SERVER:(SETF PING-INTERVAL)"> <header> <span class="visibility">EXTERNAL</span> <span class="type">GENERIC-FUNCTION</span> <h4 class="name"> <a href="#GENERIC-FUNCTION%20LICHAT-TCP-SERVER%3A%28SETF%20PING-INTERVAL%29">(SETF PING-INTERVAL)</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">NEW-VALUE</li>    <li class="argument">OBJECT</li>    <li class="argument lambda-list-keyword">&amp;REST</li>  </ul>  </header> <div class="docstring"><i>No documentation provided.</i></div> </article> </li>  <li> <article class="definition generic-function callable" id="GENERIC-FUNCTION LICHAT-TCP-SERVER:PORT"> <header> <span class="visibility">EXTERNAL</span> <span class="type">GENERIC-FUNCTION</span> <h4 class="name"> <a href="#GENERIC-FUNCTION%20LICHAT-TCP-SERVER%3APORT">PORT</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">OBJECT</li>    <li class="argument lambda-list-keyword">&amp;REST</li>  </ul>  </header> <div class="docstring"><pre>Accessor to the port of the connection.
+
+See <a href="#CLASS%20LICHAT-TCP-SERVER%3ACONNECTION" class="xref">CONNECTION</a></pre></div> </article> </li>  <li> <article class="definition generic-function callable" id="GENERIC-FUNCTION LICHAT-TCP-SERVER:(SETF PORT)"> <header> <span class="visibility">EXTERNAL</span> <span class="type">GENERIC-FUNCTION</span> <h4 class="name"> <a href="#GENERIC-FUNCTION%20LICHAT-TCP-SERVER%3A%28SETF%20PORT%29">(SETF PORT)</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">NEW-VALUE</li>    <li class="argument">OBJECT</li>    <li class="argument lambda-list-keyword">&amp;REST</li>  </ul>  </header> <div class="docstring"><i>No documentation provided.</i></div> </article> </li>  <li> <article class="definition generic-function callable" id="GENERIC-FUNCTION LICHAT-TCP-SERVER:SOCKET"> <header> <span class="visibility">EXTERNAL</span> <span class="type">GENERIC-FUNCTION</span> <h4 class="name"> <a href="#GENERIC-FUNCTION%20LICHAT-TCP-SERVER%3ASOCKET">SOCKET</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">OBJECT</li>    <li class="argument lambda-list-keyword">&amp;REST</li>  </ul>  </header> <div class="docstring"><pre>Accessor to the TCP socket of the connection.
+
+See USOCKET:SOCKET
+See <a href="#CLASS%20LICHAT-TCP-SERVER%3ACONNECTION" class="xref">CONNECTION</a></pre></div> </article> </li>  <li> <article class="definition generic-function callable" id="GENERIC-FUNCTION LICHAT-TCP-SERVER:(SETF SOCKET)"> <header> <span class="visibility">EXTERNAL</span> <span class="type">GENERIC-FUNCTION</span> <h4 class="name"> <a href="#GENERIC-FUNCTION%20LICHAT-TCP-SERVER%3A%28SETF%20SOCKET%29">(SETF SOCKET)</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">NEW-VALUE</li>    <li class="argument">OBJECT</li>    <li class="argument lambda-list-keyword">&amp;REST</li>  </ul>  </header> <div class="docstring"><i>No documentation provided.</i></div> </article> </li>  <li> <article class="definition generic-function callable" id="GENERIC-FUNCTION LICHAT-TCP-SERVER:THREAD"> <header> <span class="visibility">EXTERNAL</span> <span class="type">GENERIC-FUNCTION</span> <h4 class="name"> <a href="#GENERIC-FUNCTION%20LICHAT-TCP-SERVER%3ATHREAD">THREAD</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">OBJECT</li>    <li class="argument lambda-list-keyword">&amp;REST</li>  </ul>  </header> <div class="docstring"><pre>Accessor to the background processing thread of the object.
+
+See <a href="#CLASS%20LICHAT-TCP-SERVER%3ASERVER" class="xref">SERVER</a>
+See <a href="#CLASS%20LICHAT-TCP-SERVER%3ACONNECTION" class="xref">CONNECTION</a></pre></div> </article> </li>  <li> <article class="definition generic-function callable" id="GENERIC-FUNCTION LICHAT-TCP-SERVER:(SETF THREAD)"> <header> <span class="visibility">EXTERNAL</span> <span class="type">GENERIC-FUNCTION</span> <h4 class="name"> <a href="#GENERIC-FUNCTION%20LICHAT-TCP-SERVER%3A%28SETF%20THREAD%29">(SETF THREAD)</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">NEW-VALUE</li>    <li class="argument">OBJECT</li>    <li class="argument lambda-list-keyword">&amp;REST</li>  </ul>  </header> <div class="docstring"><i>No documentation provided.</i></div> </article> </li> </ul> </article> </li> </ul> </section>  </article> <script>window.addEventListener("DOMContentLoaded", function(){
+    var unmarkElement = function(el){
+        if(el.tagName === "mark" || el.tagName === "MARK"){
+            [].forEach.call(el.childNodes, function(child){
+                el.parentNode.insertBefore(child, el);
+            });
+            el.parentNode.removeChild(el);
+        }else if(el.parentNode.tagName === "mark"){
+            return unmarkElement(el.parentNode);
+        }
+        return null;
+    }
+
+    var unmarkAll = function(root){
+        root = root || document;
+        [].forEach.call(root.querySelectorAll("mark"), unmarkElement);
+    }
+    
+    var markElement = function(el){
+        if(el.parentNode.tagName === "mark" || el.parentNode.tagName === "MARK"){
+            return el.parentNode;
+        } else {
+            unmarkAll();
+            var marked = document.createElement("mark");
+            el.parentNode.insertBefore(marked, el);
+            marked.appendChild(el);
+            return marked;
+        }
+    }
+
+    var markFragmented = function(){
+        if(window.location.hash){
+            var el = document.getElementById(decodeURIComponent(window.location.hash.substr(1)));
+            if(el) markElement(el);
+        }
+    }
+
+    var registerXrefLink = function(link){
+        var el = document.getElementById(decodeURIComponent(link.getAttribute("href").substr(1)));
+        if(el){
+            link.addEventListener("click", function(){
+                markElement(el);
+            });
+        }
+    }
+
+    var registerXrefLinks = function(root){
+        root = root || document;
+        [].forEach.call(root.querySelectorAll("a.xref"), registerXrefLink);
+    }
+
+    markFragmented();
+    registerXrefLinks();
+}); </script> </body> </html> 
